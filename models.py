@@ -88,4 +88,4 @@ class PlaybackState:
             )
 
     def __repr__(self):
-        return f"<PlaybackState {self.device=} {self.track=} {self.playing=} {self.progress=}>"
+        return f"<PlaybackState \"{self.device.name}\" ({self.device.type}), {self.track=}, {self.playing=}, {self.progress.current_time}/{self.progress.duration} - {self.progress.progress * 100 // 1}%>"
