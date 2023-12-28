@@ -1,11 +1,13 @@
+import os
 import sys
-import tkinter as tk
+import threading
+import time
+from threading import Thread
 
-import spotipy
 from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyOAuth
 
-import ui
+from api.core import SpotifyApi
+from ui import SpotifyRemoteWindow
 
 load_dotenv()
 
@@ -34,43 +36,28 @@ if len(sys.argv) >= 3:
     print(f"Custom window size: {width}x{height}")
     window_size = (width, height)
 
-spotify = spotipy.Spotify(
-    auth_manager=SpotifyOAuth(
-        redirect_uri="http://localhost:7392",
-        scope="user-read-playback-state user-modify-playback-state"
-    )
-)
+
+def ui_updater(api: SpotifyApi, target_window: SpotifyRemoteWindow, controller_event: threading.Event):
+    while not controller_event.is_set():
+        state = api.current_playback
+        print(state)
+        target_window.set_playing_status(state.playing)
+        target_window.set_progress_bar_value(state.progress.percentage)
+        target_window.set_timestamps(state.progress.current_time, state.progress.duration)
+        target_window.set_device_label(state.device.name)
+        target_window.set_cover_image(state.track.image.url)
+        time.sleep(0.8)
+
+    print("UI Updater shutting down!")
 
 
-root = tk.Tk()
-root.title("Spotify Remote UI")
-root.overrideredirect(True)
-root.geometry("%dx%d" % window_size)
-root.configure(bg="black")
+spotify = SpotifyApi(redirect_uri="http://localhost:7392")
+window = SpotifyRemoteWindow(size=window_size, display_in_window=os.getenv("INWINDOW") == "1")
 
-root.assets = {
-    "pause_icon": tk.PhotoImage(file="assets/pause.png"),
-    "play_icon": tk.PhotoImage(file="assets/play.png")
-}
+stop_event = threading.Event()
+thread = Thread(target=ui_updater, args=(spotify, window, stop_event), daemon=True)
+thread.start()
 
-play_btn = ui.CleanButton(root)
-play_btn.place(
-    x=window_size[0] // 2 - ui.Sizing.PLAY_BUTTON_SIZE // 2,
-    y=window_size[1] - ui.Sizing.PLAY_BUTTON_SIZE - ui.Sizing.SPACE_UNIT,
-    width=ui.Sizing.PLAY_BUTTON_SIZE,
-    height=ui.Sizing.PLAY_BUTTON_SIZE
-)
-
-
-def set_playing_status(is_playing: bool):
-    play_btn.configure(image=root.assets["pause_icon" if is_playing else "play_icon"])
-
-
-set_playing_status(False)
-
-root.mainloop()
-
-# while True:
-#     result = models.PlaybackState(spotify.current_playback())
-#     print(result)
-#     time.sleep(1)
+window.mainloop()
+stop_event.set()
+thread.join()

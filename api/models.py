@@ -30,7 +30,7 @@ class Episode:
 class PlaybackProgress:
     current_time: str
     duration: str
-    progress: float
+    percentage: float
 
 
 @dataclass
@@ -84,8 +84,8 @@ class PlaybackState:
             self.progress = PlaybackProgress(
                 current_time=utils.seconds_to_timestamp(progress_seconds),
                 duration=utils.seconds_to_timestamp(duration_seconds),
-                progress=round(progress_seconds / duration_seconds, 2)
+                percentage=round(progress_seconds / duration_seconds, 2)
             )
 
     def __repr__(self):
-        return f"<PlaybackState \"{self.device.name}\" ({self.device.type}), {self.track=}, {self.playing=}, {self.progress.current_time}/{self.progress.duration} - {self.progress.progress * 100 // 1}%>"
+        return f"<PlaybackState \"{self.device.name}\" ({self.device.type}), {self.track=}, {self.playing=}, {self.progress.current_time}/{self.progress.duration} - {int(self.progress.percentage * 100)}%>"
