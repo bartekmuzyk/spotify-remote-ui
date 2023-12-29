@@ -6,9 +6,9 @@ import locale
 
 import argparse
 
+from ui import SpotifyRemoteWindow, SpotifyRemoteWindowCallbacks
 from api.core import SpotifyApi
 from api.models import Track as SpotifyTrack, Episode as SpotifyEpisode
-from ui import SpotifyRemoteWindow
 
 parser = argparse.ArgumentParser(
     prog=sys.argv[0],
@@ -106,12 +106,35 @@ def ui_updater(api: SpotifyApi, target_window: SpotifyRemoteWindow, controller_e
     print("UI Updater shutting down!")
 
 
+class Callbacks(SpotifyRemoteWindowCallbacks):
+    api: SpotifyApi
+
+    def __init__(self, api: SpotifyApi):
+        self.api = api
+
+    def pause(self):
+        self.api.playback_pause()
+
+    def resume(self):
+        self.api.playback_resume()
+
+    def next(self):
+        self.api.playback_next_track()
+
+    def previous(self):
+        self.api.playback_previous_track()
+
+
 spotify = SpotifyApi(
     client_id=opts.client_id,
     client_secret=opts.client_secret,
     redirect_uri="http://localhost:7392"
 )
-window = SpotifyRemoteWindow(size=window_size, display_in_window=opts.windowed)
+window = SpotifyRemoteWindow(
+    size=window_size,
+    display_in_window=opts.windowed,
+    callbacks=Callbacks(spotify)
+)
 
 stop_event = threading.Event()
 thread = threading.Thread(target=ui_updater, args=(spotify, window, stop_event), daemon=True)

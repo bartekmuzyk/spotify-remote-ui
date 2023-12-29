@@ -79,8 +79,26 @@ def get_cover_image_for_window(window: "SpotifyRemoteWindow", url: str, size: in
         print(f"ERROR WHEN LOADING COVER IMAGE:\n{e}\n--------------------")
 
 
+# noinspection PyMethodMayBeStatic
+class SpotifyRemoteWindowCallbacks:
+    def pause(self):
+        return NotImplemented
+
+    def resume(self):
+        return NotImplemented
+
+    def next(self):
+        return NotImplemented
+
+    def previous(self):
+        return NotImplemented
+
+
 class SpotifyRemoteWindow(CleanWindow):
     assets: dict[str, tk.PhotoImage]
+    callbacks: SpotifyRemoteWindowCallbacks
+
+    is_playing: bool | None
 
     play_btn: CleanButton
     prev_btn: CleanButton
@@ -101,7 +119,7 @@ class SpotifyRemoteWindow(CleanWindow):
     song_title: FadedText
     song_artist: FadedText
 
-    def __init__(self, *, size: (int, int), display_in_window: bool):
+    def __init__(self, *, size: (int, int), display_in_window: bool, callbacks: SpotifyRemoteWindowCallbacks):
         CleanWindow.__init__(self, display_in_window=display_in_window)
         width, height = size
 
@@ -118,13 +136,16 @@ class SpotifyRemoteWindow(CleanWindow):
             "device_default": a("devices/default.png"),
         }
 
+        self.callbacks = callbacks
+        self.is_playing = None
+
         self.title("Spotify Remote UI")
         self.geometry("%dx%d" % size)
 
         # Playback controls
-        self.play_btn = CleanButton(self, image=self.assets["play_icon"])
-        self.prev_btn = CleanButton(self, image=self.assets["prev_icon"])
-        self.next_btn = CleanButton(self, image=self.assets["next_icon"])
+        self.play_btn = CleanButton(self, image=self.assets["play_icon"], command=self.on_play_btn_click)
+        self.prev_btn = CleanButton(self, image=self.assets["prev_icon"], command=self.on_prev_btn_click)
+        self.next_btn = CleanButton(self, image=self.assets["next_icon"], command=self.on_next_btn_click)
 
         self.place_playback_controls()
         self.set_playing_status(False)
@@ -249,6 +270,8 @@ class SpotifyRemoteWindow(CleanWindow):
         self.cover_image.configure(image=self.cover_image_stream)
 
     def set_playing_status(self, is_playing: bool | None):
+        self.is_playing = is_playing
+
         if is_playing is None:
             self.play_btn.place_forget()
             self.next_btn.place_forget()
@@ -297,3 +320,24 @@ class SpotifyRemoteWindow(CleanWindow):
     def set_song_info(self, title: str, artist: str):
         self.song_title.update_text(title)
         self.song_artist.update_text(artist)
+
+    def on_play_btn_click(self):
+        if self.is_playing is None:
+            return
+
+        if self.is_playing:
+            self.callbacks.pause()
+        else:
+            self.callbacks.resume()
+
+    def on_prev_btn_click(self):
+        if self.is_playing is None:
+            return
+
+        self.callbacks.previous()
+
+    def on_next_btn_click(self):
+        if self.is_playing is None:
+            return
+
+        self.callbacks.next()
