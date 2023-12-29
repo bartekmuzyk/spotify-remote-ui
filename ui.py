@@ -204,12 +204,13 @@ class SpotifyRemoteWindow(CleanWindow):
         self.song_artist = FadedText(
             self,
             font=("Verdana", 14),
+            fill="#ccc",
             width=self.song_title.winfo_width()
         )
         self.song_artist.place(
             x=self.song_title.winfo_x(),
             y=self.song_title.winfo_y() + self.song_title.winfo_height(),
-            height=22
+            height=26
         )
 
         self.song_title.update_text("Waiting for Spotify...")

@@ -18,7 +18,6 @@ window_size = (480, 320)
 
 if len(sys.argv) >= 3:
     width, height, *_ = sys.argv[1:]
-    print(width, height, _)
 
     if not width.isnumeric():
         print("ERROR: width must be an integer")
