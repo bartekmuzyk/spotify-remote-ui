@@ -227,8 +227,7 @@ class SpotifyRemoteWindow(CleanWindow):
 
         self.prev_btn.place(
             x=(0.5 * width - Sizing.SIDE_BUTTON_SIZE) // 2,
-            y=height - Sizing.SIDE_BUTTON_SIZE - Sizing.SPACE_UNIT - (
-                    Sizing.PLAY_BUTTON_SIZE - Sizing.SIDE_BUTTON_SIZE) // 2,
+            y=height - Sizing.SIDE_BUTTON_SIZE - Sizing.SPACE_UNIT - (Sizing.PLAY_BUTTON_SIZE - Sizing.SIDE_BUTTON_SIZE) // 2,
             width=Sizing.SIDE_BUTTON_SIZE,
             height=Sizing.SIDE_BUTTON_SIZE
         )
