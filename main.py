@@ -1,45 +1,69 @@
-import os
 import sys
 import threading
 import time
-from threading import Thread
 from datetime import datetime
 import locale
 
-from dotenv import load_dotenv
+import argparse
 
 from api.core import SpotifyApi
 from api.models import Track as SpotifyTrack, Episode as SpotifyEpisode
 from ui import SpotifyRemoteWindow
 
-load_dotenv()
+parser = argparse.ArgumentParser(
+    prog=sys.argv[0],
+    description="An application which displays a touch-friendly UI with Spotify playback information and controls"
+)
+parser.add_argument(
+    "client_id",
+    type=str,
+    help="Spotify app client ID"
+)
+parser.add_argument(
+    "client_secret",
+    type=str,
+    help="Spotify app client secret"
+)
+parser.add_argument(
+    "--width",
+    type=int,
+    default=480,
+    help="Width of the displayed window in pixels."
+)
+parser.add_argument(
+    "--height",
+    type=int,
+    default=320,
+    help="Height of the displayed window in pixels."
+)
+parser.add_argument(
+    "--windowed",
+    action="store_true",
+    help="Whether the application should be displayed in a framed or a frameless window."
+)
+parser.add_argument(
+    "-l", "--locale",
+    type=str,
+    default="en_US.utf8",
+    help="The locale. Used by internal functions to display information in the proper language. (e.g. en_US.utf8)"
+)
+opts = parser.parse_args()
 
-window_size = (480, 320)
+if opts.width < 330:
+    print("ERROR: width must be at least 330")
+    sys.exit(1)
+elif opts.height < 320:
+    print("ERROR: height must be at least 320")
+    sys.exit(1)
 
-if len(sys.argv) >= 3:
-    width, height, *_ = sys.argv[1:]
+window_size = (opts.width, opts.height)
+print("Window size: %dx%d" % window_size)
 
-    if not width.isnumeric():
-        print("ERROR: width must be an integer")
-        sys.exit(1)
-    elif not height.isnumeric():
-        print("ERROR: height must be an integer")
-        sys.exit(1)
+print(f"Setting locale: {opts.locale}")
+locale.setlocale(locale.LC_ALL, opts.locale)
 
-    width, height = int(width), int(height)
-
-    if width < 330:
-        print("ERROR: width must be at least 330")
-        sys.exit(1)
-    elif height < 320:
-        print("ERROR: height must be at least 320")
-        sys.exit(1)
-
-    print(f"Custom window size: {width}x{height}")
-    window_size = (width, height)
-
-print(f"Setting locale: {os.getenv('LOCALE')}")
-locale.setlocale(locale.LC_ALL, os.getenv("LOCALE"))
+if opts.windowed:
+    print("Running in windowed mode")
 
 
 def ui_updater(api: SpotifyApi, target_window: SpotifyRemoteWindow, controller_event: threading.Event):
@@ -82,11 +106,15 @@ def ui_updater(api: SpotifyApi, target_window: SpotifyRemoteWindow, controller_e
     print("UI Updater shutting down!")
 
 
-spotify = SpotifyApi(redirect_uri="http://localhost:7392")
-window = SpotifyRemoteWindow(size=window_size, display_in_window=os.getenv("INWINDOW") == "1")
+spotify = SpotifyApi(
+    client_id=opts.client_id,
+    client_secret=opts.client_secret,
+    redirect_uri="http://localhost:7392"
+)
+window = SpotifyRemoteWindow(size=window_size, display_in_window=opts.windowed)
 
 stop_event = threading.Event()
-thread = Thread(target=ui_updater, args=(spotify, window, stop_event), daemon=True)
+thread = threading.Thread(target=ui_updater, args=(spotify, window, stop_event), daemon=True)
 thread.start()
 
 window.mainloop()

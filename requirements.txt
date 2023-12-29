@@ -1,9 +1,12 @@
+altgraph==0.17.4
 async-timeout==4.0.3
 certifi==2023.11.17
 charset-normalizer==3.3.2
 idna==3.6
+packaging==23.2
 Pillow==10.1.0
-python-dotenv==1.0.0
+pyinstaller==6.3.0
+pyinstaller-hooks-contrib==2023.11
 redis==5.0.1
 requests==2.31.0
 six==1.16.0

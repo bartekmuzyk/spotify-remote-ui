@@ -2,6 +2,7 @@ from threading import Thread
 import tkinter as tk
 from urllib.request import urlopen
 from typing import Any
+from os import path
 
 from PIL import ImageTk, Image
 
@@ -105,7 +106,7 @@ class SpotifyRemoteWindow(CleanWindow):
         width, height = size
 
         # Quick asset loader
-        def a(f): return tk.PhotoImage(file=f"assets/{f}")
+        def a(f): return tk.PhotoImage(file=path.abspath(path.join(path.dirname(__file__), f"assets/{f}")))
 
         self.assets = {
             "pause_icon": a("pause.png"),
