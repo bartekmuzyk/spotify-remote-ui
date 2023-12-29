@@ -283,11 +283,14 @@ class SpotifyRemoteWindow(CleanWindow):
 
         if self.current_cover_image_url == url:
             return
+        else:
+            self.cover_image.configure(image="")
 
         if self.current_cover_image_sequence is not None:
             self.unbind_all(self.current_cover_image_sequence)
 
         self.current_cover_image_sequence = f"<<Image{utils.unix_millis()}Loaded>>"
+        self.current_cover_image_url = url
         self.bind(self.current_cover_image_sequence, self.on_cover_loaded)
         Thread(target=get_cover_image_for_window, args=(self, url, self.cover_image_size)).start()
 
