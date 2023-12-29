@@ -3,10 +3,13 @@ import sys
 import threading
 import time
 from threading import Thread
+from datetime import datetime
+import locale
 
 from dotenv import load_dotenv
 
 from api.core import SpotifyApi
+from api.models import Track as SpotifyTrack, Episode as SpotifyEpisode
 from ui import SpotifyRemoteWindow
 
 load_dotenv()
@@ -36,17 +39,46 @@ if len(sys.argv) >= 3:
     print(f"Custom window size: {width}x{height}")
     window_size = (width, height)
 
+print(f"Setting locale: {os.getenv('LOCALE')}")
+locale.setlocale(locale.LC_ALL, os.getenv("LOCALE"))
+
 
 def ui_updater(api: SpotifyApi, target_window: SpotifyRemoteWindow, controller_event: threading.Event):
     while not controller_event.is_set():
-        state = api.current_playback
-        print(state)
-        target_window.set_playing_status(state.playing)
-        target_window.set_progress_bar_value(state.progress.percentage)
-        target_window.set_timestamps(state.progress.current_time, state.progress.duration)
-        target_window.set_device_label(state.device.name)
-        target_window.set_cover_image(state.track.image.url)
-        time.sleep(0.8)
+        state = None
+
+        try:
+            state = api.current_playback
+        except Exception as e:
+            print(e)
+
+        if state is not None:
+            target_window.set_playing_status(state.playing)
+
+            if state.progress is not None:
+                target_window.set_progress_bar_value(state.progress.percentage)
+                target_window.set_timestamps(state.progress.current_time, state.progress.duration)
+            else:
+                target_window.set_progress_bar_value(0)
+                target_window.set_timestamps("0:00", "")
+
+            target_window.set_device(state.device.name, "default")
+            target_window.set_cover_image(state.track.image.url)
+
+            if isinstance(state.track, SpotifyTrack):
+                target_window.set_song_info(state.track.name, state.track.artist)
+            elif isinstance(state.track, SpotifyEpisode):
+                target_window.set_song_info(state.track.name, state.track.show_name)
+
+            time.sleep(0.8)
+        else:
+            target_window.set_playing_status(None)
+            target_window.set_progress_bar_value(None)
+            target_window.set_timestamps("", "")
+            target_window.set_device(datetime.now().strftime("%H:%M - %d %b %Y"), "none")
+            target_window.set_cover_image(None)
+            target_window.set_song_info("", "")
+            time.sleep(3)
 
     print("UI Updater shutting down!")
 
