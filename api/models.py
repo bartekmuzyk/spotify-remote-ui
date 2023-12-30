@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from dataclasses import dataclass
 
 import utils
@@ -41,9 +41,9 @@ class PlaybackDevice:
 
 class PlaybackState:
     device: PlaybackDevice
-    track: Track | Episode | None
+    track: Optional[Track | Episode]
     playing: bool
-    progress: PlaybackProgress | None
+    progress: Optional[PlaybackProgress]
 
     def __init__(self, data):
         self.device = PlaybackDevice(
@@ -56,27 +56,26 @@ class PlaybackState:
 
         item = data["item"]
         if item is not None:
-            match item["type"]:
-                case "track":
-                    self.track = Track(
-                        name=item["name"],
-                        artist=", ".join([artist["name"] for artist in item["artists"]]),
-                        duration=item["duration_ms"],
-                        image=Image(
-                            url=item["album"]["images"][0]["url"],
-                            size=(item["album"]["images"][0]["width"], item["album"]["images"][0]["height"])
-                        )
+            if item["type"] == "track":
+                self.track = Track(
+                    name=item["name"],
+                    artist=", ".join([artist["name"] for artist in item["artists"]]),
+                    duration=item["duration_ms"],
+                    image=Image(
+                        url=item["album"]["images"][0]["url"],
+                        size=(item["album"]["images"][0]["width"], item["album"]["images"][0]["height"])
                     )
-                case "episode":
-                    self.track = Episode(
-                        name=item["name"],
-                        show_name=item["show"]["name"],
-                        duration=item["duration_ms"],
-                        image=Image(
-                            url=item["images"][0]["url"],
-                            size=(item["images"][0]["width"], item["images"][0]["height"])
-                        )
+                )
+            elif item["type"] == "episode":
+                self.track = Episode(
+                    name=item["name"],
+                    show_name=item["show"]["name"],
+                    duration=item["duration_ms"],
+                    image=Image(
+                        url=item["images"][0]["url"],
+                        size=(item["images"][0]["width"], item["images"][0]["height"])
                     )
+                )
 
         if self.track is not None:
             progress_seconds = data["progress_ms"] // 1000 if data["progress_ms"] is not None else 0

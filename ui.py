@@ -3,6 +3,7 @@ import tkinter as tk
 from urllib.request import urlopen
 from typing import Any
 from os import path
+from typing import Optional
 
 from PIL import ImageTk, Image
 
@@ -98,7 +99,7 @@ class SpotifyRemoteWindow(CleanWindow):
     assets: dict[str, tk.PhotoImage]
     callbacks: SpotifyRemoteWindowCallbacks
 
-    is_playing: bool | None
+    is_playing: Optional[bool]
 
     play_btn: CleanButton
     prev_btn: CleanButton
@@ -112,10 +113,10 @@ class SpotifyRemoteWindow(CleanWindow):
     device_label: FadedText
 
     cover_image: tk.Label
-    cover_image_stream: Any | None
+    cover_image_stream: Optional[Any]
     cover_image_size: int
-    current_cover_image_sequence: str | None
-    current_cover_image_url: str | None
+    current_cover_image_sequence: Optional[str]
+    current_cover_image_url: Optional[str]
     song_title: FadedText
     song_artist: FadedText
 
@@ -269,7 +270,7 @@ class SpotifyRemoteWindow(CleanWindow):
         self.current_cover_image_sequence = None
         self.cover_image.configure(image=self.cover_image_stream)
 
-    def set_playing_status(self, is_playing: bool | None):
+    def set_playing_status(self, is_playing: Optional[bool]):
         self.is_playing = is_playing
 
         if is_playing is None:
@@ -281,7 +282,7 @@ class SpotifyRemoteWindow(CleanWindow):
         self.place_playback_controls()
         self.play_btn.configure(image=self.assets["pause_icon" if is_playing else "play_icon"])
 
-    def set_progress_bar_value(self, percentage: float | None):
+    def set_progress_bar_value(self, percentage: Optional[float]):
         if percentage is None:
             self.progress_bar.toggle_visibility(False)
             return
@@ -297,7 +298,7 @@ class SpotifyRemoteWindow(CleanWindow):
         self.device_label.update_text(name)
         self.device_icon.configure(image=self.assets[f"device_{device_type}"])
 
-    def set_cover_image(self, url: str | None):
+    def set_cover_image(self, url: Optional[str]):
         if url is None:
             self.unbind_all(self.current_cover_image_sequence)
             self.current_cover_image_sequence = None

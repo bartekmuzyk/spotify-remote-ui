@@ -1,3 +1,5 @@
+from typing import Optional
+
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
@@ -18,7 +20,7 @@ class SpotifyApi:
         )
 
     @property
-    def current_playback(self) -> models.PlaybackState | None:
+    def current_playback(self) -> Optional[models.PlaybackState]:
         data = self.client.current_playback()
 
         return models.PlaybackState(data) if data is not None else None
