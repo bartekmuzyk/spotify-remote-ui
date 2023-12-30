@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 from dataclasses import dataclass
 
 import utils
@@ -41,7 +41,7 @@ class PlaybackDevice:
 
 class PlaybackState:
     device: PlaybackDevice
-    track: Optional[Track | Episode]
+    track: Optional[Union[Track | Episode]]
     playing: bool
     progress: Optional[PlaybackProgress]
 
