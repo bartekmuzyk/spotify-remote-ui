@@ -41,7 +41,7 @@ class PlaybackDevice:
 
 class PlaybackState:
     device: PlaybackDevice
-    track: Optional[Union[Track | Episode]]
+    track: Optional[Union[Track, Episode]]
     playing: bool
     progress: Optional[PlaybackProgress]
 
