@@ -47,6 +47,11 @@ parser.add_argument(
     default="en_US.utf8",
     help="The locale. Used by internal functions to display information in the proper language. (e.g. en_US.utf8)"
 )
+parser.add_argument(
+    "--hide-cursor",
+    action="store_true",
+    help="Whether the cursor should be visible in the window. Most useful for touchscreens."
+)
 opts = parser.parse_args()
 
 if opts.width < 330:
@@ -133,6 +138,7 @@ spotify = SpotifyApi(
 window = SpotifyRemoteWindow(
     size=window_size,
     display_in_window=opts.windowed,
+    hide_cursor=opts.hide_cursor,
     callbacks=Callbacks(spotify)
 )
 

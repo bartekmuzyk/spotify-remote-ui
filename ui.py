@@ -120,8 +120,12 @@ class SpotifyRemoteWindow(CleanWindow):
     song_title: FadedText
     song_artist: FadedText
 
-    def __init__(self, *, size: (int, int), display_in_window: bool, callbacks: SpotifyRemoteWindowCallbacks):
+    def __init__(self, *, size: (int, int), display_in_window: bool, hide_cursor: bool, callbacks: SpotifyRemoteWindowCallbacks):
         CleanWindow.__init__(self, display_in_window=display_in_window)
+
+        if hide_cursor:
+            self.configure(cursor="none")
+
         width, height = size
 
         # Quick asset loader
